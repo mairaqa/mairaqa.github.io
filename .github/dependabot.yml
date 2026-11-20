@@ -1,0 +1,11 @@
+# Keeps dependencies patched: opens a PR each week when a new version is out.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      all: { patterns: ['*'] }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }

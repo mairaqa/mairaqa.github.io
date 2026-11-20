@@ -1,0 +1,16 @@
+---
+import type { ProjectStatus } from '../data/projects';
+import { getLang, useUI } from '../i18n';
+interface Props { status: ProjectStatus }
+const { status } = Astro.props;
+const ui = useUI(getLang(Astro.currentLocale));
+const styles: Record<ProjectStatus, { icon: string; cls: string }> = {
+  passing: { icon: '✓', cls: 'text-pass border-pass/40 bg-pass/10' },
+  'in progress': { icon: '◌', cls: 'text-info border-info/40 bg-info/10' },
+  experiment: { icon: '~', cls: 'text-flaky border-flaky/40 bg-flaky/10' },
+};
+const s = styles[status];
+---
+<span class={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[11px] ${s.cls}`}>
+  <span aria-hidden="true">{s.icon}</span>{ui.status[status]}
+</span>

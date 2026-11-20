@@ -1,0 +1,5 @@
+# 🐞 no bugs allowed past this point (but crawlers are welcome)
+User-agent: *
+Allow: /
+
+Sitemap: https://mairaqa.github.io/sitemap.xml

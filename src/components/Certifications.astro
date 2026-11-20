@@ -1,0 +1,72 @@
+---
+import SectionTitle from './SectionTitle.astro';
+import HiddenBug from './HiddenBug.astro';
+import Links from './CertLinks.astro';
+import { certs, certGroups, byGroup, courseCount, formatDate, type CertGroup } from '../data/certifications';
+import { getLang, useUI, t } from '../i18n';
+import { sentence } from '../i18n/case';
+const lang = getLang(Astro.currentLocale);
+const ui = useUI(lang);
+// ISTQB is the most relevant for QA: shown as cards. Other certifications as compact rows.
+const featured = certs.filter((c) => c.issuer.startsWith('ISTQB'));
+const others = certs.filter((c) => !c.issuer.startsWith('ISTQB'));
+const groups = (Object.keys(certGroups) as CertGroup[]).filter((g) => byGroup(g).length > 0);
+---
+<section id="certifications" aria-labelledby="certifications-title" class="reveal mx-auto max-w-4xl px-4 sm:px-6 py-14 sm:py-16">
+  <SectionTitle n="04" id="certifications" label={ui.certifications} meta={ui.certsMeta(certs.length, courseCount)} />
+
+  {/* exam-based certifications */}
+  <h3 class="mb-4 font-mono text-sm font-semibold text-fg">{ui.certsSub}</h3>
+  <ul class="grid gap-4 sm:grid-cols-2">
+    {featured.map((c, i) => (
+      <li class="relative flex flex-col rounded-lg border border-line border-l-2 border-l-pass bg-surface p-5">
+        {i === 1 && <HiddenBug id="certifications" class="-right-2 -top-3" />}
+        <div class="flex items-start gap-3">
+          <span class="mt-0.5 font-mono text-pass" aria-hidden="true">✓</span>
+          <div>
+            <h4 class="font-mono text-sm font-semibold leading-snug text-fg">{t(c.name, lang)}</h4>
+            <p class="mt-2 font-mono text-xs text-muted">{c.issuer} · {sentence(formatDate(c.date, lang))}</p>
+          </div>
+        </div>
+        <Links c={c} class="mt-auto pl-6 pt-4" />
+      </li>
+    ))}
+  </ul>
+  {others.length > 0 && (
+    <ul class="mt-4 divide-y divide-dashed divide-line border-y border-dashed border-line">
+      {others.map((c) => (
+        <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-3">
+          <p class="text-sm text-fg"><span class="font-mono text-pass" aria-hidden="true">✓ </span>{t(c.name, lang)} <span class="font-mono text-xs text-muted">· {c.issuer} · {sentence(formatDate(c.date, lang))}</span></p>
+          <Links c={c} class="pl-4 sm:pl-0" />
+        </li>
+      ))}
+    </ul>
+  )}
+
+  {/* courses: completion certificates, collapsed per topic with the count visible */}
+  <h3 class="mt-12 mb-4 font-mono text-sm font-semibold text-fg">{ui.coursesSub}</h3>
+  <div class="space-y-3">
+    {groups.map((g) => (
+      <details class="course rounded border border-dashed border-line">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-2.5 font-mono text-sm text-fg hover:text-pass">
+          <span><span class="course-arrow text-pass" aria-hidden="true">▸</span> describe('{t(certGroups[g], lang)}')</span>
+          <span class="text-xs text-muted">{ui.courses(byGroup(g).length)}</span>
+        </summary>
+        <ul class="divide-y divide-dashed divide-line border-t border-dashed border-line px-4">
+          {byGroup(g).map((c) => (
+            <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2.5">
+              <p class="text-sm text-fg">{t(c.name, lang)} <span class="font-mono text-xs text-muted">· {c.issuer} · {sentence(formatDate(c.date, lang))}</span></p>
+              <Links c={c} />
+            </li>
+          ))}
+        </ul>
+      </details>
+    ))}
+  </div>
+</section>
+
+<style>
+  .course summary::-webkit-details-marker { display: none; }
+  .course-arrow { display: inline-block; transition: transform .15s; }
+  .course[open] .course-arrow { transform: rotate(90deg); }
+</style>

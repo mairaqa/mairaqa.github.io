@@ -1,0 +1,108 @@
+---
+import SectionTitle from './SectionTitle.astro';
+import StatusBadge from './StatusBadge.astro';
+import HiddenBug from './HiddenBug.astro';
+import { projects } from '../data/projects';
+import { getLang, useUI, t } from '../i18n';
+import { sentence, title, terms } from '../i18n/case';
+const lang = getLang(Astro.currentLocale);
+const ui = useUI(lang);
+const pad = (n: number) => String(n).padStart(2, '0');
+const accent = {
+  passing: { border: 'border-l-pass', bar: 'fill-pass' },
+  'in progress': { border: 'border-l-info', bar: 'fill-info' },
+  experiment: { border: 'border-l-flaky', bar: 'fill-flaky' },
+};
+---
+<section id="projects" aria-labelledby="projects-title" class="reveal mx-auto max-w-4xl px-4 sm:px-6 py-14 sm:py-16">
+  <SectionTitle n="02" id="projects" label={ui.projects} meta={ui.suites(projects.length)} />
+  <ol class="space-y-4">
+    {projects.map((p, i) => {
+      const pct = p.tests ? Math.round((p.tests.passed / p.tests.total) * 100) : 0;
+      return (
+        <li class={`relative grid gap-5 rounded-lg border border-line border-l-2 ${accent[p.status].border} bg-surface/40 p-5 sm:p-7 sm:grid-cols-[2.5rem_1fr_9rem]`}>
+          {i === projects.length - 1 && <HiddenBug id="projects" class="right-3 -top-3" />}
+          <span class="font-mono text-sm text-muted">{pad(i + 1)}</span>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-3">
+              <h3 class="font-mono text-lg sm:text-xl font-semibold text-fg">{sentence(t(p.title, lang))}</h3>
+              <StatusBadge status={p.status} />
+            </div>
+            <p class="mt-3 text-muted leading-relaxed">{sentence(t(p.description, lang))}</p>
+            {p.highlights && (
+              <ul class="mt-4 space-y-1.5 text-muted">
+                {t(p.highlights, lang).map((h) => <li class="flex gap-2"><span class="font-mono text-pass" aria-hidden="true">+</span><span>{sentence(h)}</span></li>)}
+              </ul>
+            )}
+            {p.key && (
+              <ul class="mt-5 flex flex-wrap gap-2" aria-label={ui.stackLabel}>
+                {p.key.map((it) => <li class="font-mono text-xs rounded border border-line px-2 py-1 text-fg">{it}</li>)}
+              </ul>
+            )}
+            {(p.repo || p.report || p.evidence) && (
+              <div class="mt-6 flex flex-wrap gap-x-4 gap-y-2 font-mono text-sm">
+                {p.repo && <a class="link text-fg" href={p.repo} target="_blank" rel="noopener noreferrer">{ui.source} ↗</a>}
+                {p.report && <a class="link" href={p.report} target="_blank" rel="noopener noreferrer">{ui.report} ↗</a>}
+                {p.evidence?.map((e) => <a class="link text-muted" href={e.href} target="_blank" rel="noopener noreferrer">{t(e.label, lang)} ↗</a>)}
+              </div>
+            )}
+            {/* technical detail for interviewers, collapsed so the card stays short */}
+            {(p.caseStudy || p.stack) && (
+              <details class="case mt-6 rounded border border-dashed border-line">
+                <summary class="cursor-pointer list-none px-4 py-2.5 font-mono text-sm text-fg hover:text-pass">
+                  <span class="case-arrow text-pass" aria-hidden="true">▸</span> {ui.caseStudy}
+                </summary>
+                <div class="space-y-6 border-t border-dashed border-line px-4 py-5">
+                  {p.caseStudy?.map((c) => (
+                    <div>
+                      <h4 class="mb-2 font-mono text-xs text-muted">describe('{t(c.title, lang)}')</h4>
+                      <ul class="space-y-1.5 text-sm text-muted">
+                        {t(c.points, lang).map((pt) => <li class="flex gap-2"><span class="font-mono text-pass" aria-hidden="true">+</span><span>{sentence(pt)}</span></li>)}
+                      </ul>
+                    </div>
+                  ))}
+                  {p.stack && (
+                    <div class="grid gap-5 sm:grid-cols-2">
+                      {p.stack.map((s) => (
+                        <div>
+                          <h4 class="mb-2 font-mono text-xs text-muted">describe('{t(s.group, lang)}')</h4>
+                          <p class="font-mono text-xs text-fg">{s.items.join(' · ')}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </details>
+            )}
+          </div>
+          <div class="font-mono text-xs text-muted sm:text-right">
+            <div>{p.year}</div>
+            {p.browsers && (
+              <div class="mt-3">
+                <p>{ui.browsers}</p>
+                <ul class="mt-1.5 space-y-1 text-fg">
+                  {p.browsers.map((b) => <li><span class="text-pass" aria-hidden="true">✓ </span>{terms(b)}</li>)}
+                </ul>
+              </div>
+            )}
+            {p.tests && (
+              <>
+                <svg class="mt-3 h-1.5 w-full" viewBox="0 0 100 6" preserveAspectRatio="none" role="img" aria-label={ui.passed(p.tests.passed, p.tests.total)}>
+                  <rect width="100" height="6" rx="3" class="fill-line" />
+                  <rect width={pct} height="6" rx="3" class={accent[p.status].bar} />
+                </svg>
+                <div class="mt-1.5">{ui.passed(p.tests.passed, p.tests.total)}</div>
+              </>
+            )}
+          </div>
+        </li>
+      );
+    })}
+  </ol>
+</section>
+
+<style>
+  .case summary::-webkit-details-marker { display: none; }
+  .case-arrow { display: inline-block; transition: transform .15s; }
+  .case[open] .case-arrow { transform: rotate(90deg); }
+</style>

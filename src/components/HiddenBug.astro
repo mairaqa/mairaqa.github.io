@@ -1,0 +1,12 @@
+---
+import Bug from './Bug.astro';
+import { getLang, useUI } from '../i18n';
+interface Props { id: string; class?: string }
+const { id, class: cls = '' } = Astro.props;
+const ui = useUI(getLang(Astro.currentLocale));
+---
+<button type="button" data-bug-id={id} aria-label={ui.hunt.label} title={ui.hunt.label}
+  class={`hidden-bug absolute cursor-pointer ${cls}`}>
+  <Bug class="bug-icon size-4" />
+  <span class="bug-check" aria-hidden="true">✓</span>
+</button>

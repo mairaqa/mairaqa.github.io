@@ -1,0 +1,64 @@
+---
+import SectionTitle from './SectionTitle.astro';
+import HiddenBug from './HiddenBug.astro';
+import { profile } from '../data/profile';
+import { getLang, useUI, t } from '../i18n';
+import { sentence, title, terms } from '../i18n/case';
+const lang = getLang(Astro.currentLocale);
+const ui = useUI(lang);
+---
+<section id="about" aria-labelledby="about-title" class="reveal mx-auto max-w-4xl px-4 sm:px-6 py-14 sm:py-16">
+  <SectionTitle n="01" id="about" label={ui.about} meta="readme.md" />
+  <div class="grid gap-10 md:grid-cols-[1.4fr_1fr]">
+    <div class="space-y-4 text-muted leading-relaxed text-pretty">
+      {t(profile.about, lang).map((p) => <p>{sentence(p)}</p>)}
+    </div>
+    {/* right column: stats, education and languages, so it balances the text */}
+    <div class="space-y-8 self-start">
+      <div class="relative">
+        <HiddenBug id="about-stats" class="-right-3 -bottom-3" />
+        <dl class="divide-y divide-line rounded-lg border border-line bg-surface">
+          {profile.stats.map((s) => (
+            <div class="flex items-baseline justify-between gap-4 px-4 py-3">
+              <dt class="font-mono text-xs text-muted">{t(s.label, lang)}</dt>
+              <dd class="text-right font-mono text-sm font-semibold text-pass">{t(s.value, lang)}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+      <div>
+        <h3 class="font-mono text-xs text-muted mb-3">describe('{ui.education.toLowerCase()}')</h3>
+        <ul class="space-y-3">
+          {profile.education.map((e) => (
+            <li>
+              <p class="text-fg">{sentence(t(e.degree, lang))}</p>
+              <p class="font-mono text-xs text-muted">{t(e.school, lang)}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-mono text-xs text-muted mb-3">describe('{ui.spoken.toLowerCase()}')</h3>
+        <ul class="space-y-3">
+          {profile.spoken.map((l) => (
+            <li>
+              <p class="text-fg">{sentence(t(l.lang, lang))}</p>
+              <p class="font-mono text-xs text-muted">{sentence(t(l.level, lang))}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="mt-10 grid gap-6 sm:grid-cols-2">
+    {Object.entries(profile.skills).map(([group, { core, also }]) => (
+      <div>
+        <h3 class="font-mono text-xs text-muted mb-2">describe('{group}')</h3>
+        <ul class="flex flex-wrap gap-2">
+          {core.map((s) => <li class="font-mono text-xs rounded border border-line px-2 py-1 text-fg">{s}</li>)}
+        </ul>
+        {also?.length && <p class="mt-2 font-mono text-xs text-muted">{ui.alsoUsed}: {also.join(' · ')}</p>}
+      </div>
+    ))}
+  </div>
+</section>

@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Bug from '../components/Bug.astro';
+import { ui } from '../i18n';
+// static hosts serve one 404 for every language, so it shows both
+const en = ui.en.notFound;
+const es = ui.es.notFound;
+---
+<Base title="404 | Page not found">
+  <Header />
+  <main id="main" class="mx-auto max-w-4xl px-4 sm:px-6 py-20">
+    <div class="flex items-center gap-3 font-mono text-fail">
+      <Bug class="size-8" />
+      <p class="text-sm">1 failed</p>
+    </div>
+    <h1 class="mt-4 font-mono text-5xl sm:text-6xl font-bold">404<span class="text-fail">.</span></h1>
+    <p class="mt-2 font-mono text-muted">{en.title} / {es.title}</p>
+    <pre class="mt-8 overflow-x-auto rounded-lg border border-line bg-surface p-5 font-mono text-sm leading-relaxed"><span class="text-fail">✗ navigation.spec.ts › page exists</span>
+<span class="text-muted">
+  Error: expect(response.status()).toBe(200)
+
+  {en.expected}: </span><span class="text-pass">200</span><span class="text-muted">
+  {en.received}: </span><span class="text-fail">404</span>
+<span class="text-muted">
+    at </span><span id="missing-path" class="text-fg">/</span></pre>
+    <p class="mt-6 max-w-xl text-muted">{en.hint}</p>
+    <p class="mt-1 max-w-xl text-muted" lang="es">{es.hint}</p>
+    <div class="mt-8 flex flex-wrap gap-3 font-mono text-sm">
+      <a href="/" class="rounded bg-pass px-4 py-2 font-semibold text-bg hover:opacity-90">{en.back}</a>
+      <a href="/es/" lang="es" class="rounded border border-line px-4 py-2 text-fg hover:border-pass/60">{es.back}</a>
+    </div>
+  </main>
+</Base>
+<script>
+  const el = document.getElementById('missing-path');
+  if (el) el.textContent = location.pathname;
+</script>

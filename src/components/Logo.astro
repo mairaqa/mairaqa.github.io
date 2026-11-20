@@ -1,0 +1,9 @@
+---
+import { profile } from '../data/profile';
+import Bug from './Bug.astro';
+const [left, right = ''] = profile.monogram.split('_');
+---
+<span class="inline-flex items-center gap-1.5 font-mono font-semibold">
+  <Bug class="size-4 text-fail" />
+  <span>{left}<span class="text-pass">_</span>{right}</span>
+</span>

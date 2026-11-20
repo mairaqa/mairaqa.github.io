@@ -1,0 +1,150 @@
+---
+// The resume is generated from the same data as the portfolio.
+// `npm run build` prints this page to /resume-en.pdf and /resume-es.pdf with Playwright.
+import Base from '../layouts/Base.astro';
+import { profile } from '../data/profile';
+import { experience } from '../data/experience';
+import { projects } from '../data/projects';
+import { certs, certGroups, byGroup, type CertGroup } from '../data/certifications';
+import { getLang, useUI, t, path } from '../i18n';
+import { sentence, title, terms } from '../i18n/case';
+const lang = getLang(Astro.currentLocale);
+const ui = useUI(lang);
+const r = ui.resumePage;
+const host = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '');
+// Resume lines for a certification group: issuers with 3+ courses are merged into one line to save space.
+const certLines = (g: CertGroup) => {
+  const list = byGroup(g);
+  const count = (issuer: string) => list.filter((c) => c.issuer === issuer).length;
+  const seen = new Set<string>();
+  const lines: { title: string; meta: string }[] = [];
+  for (const c of list) {
+    if (count(c.issuer) < 3) {
+      lines.push({ title: t(c.short ?? c.name, lang), meta: `${c.issuer.replace('ISTQB · ', '')}, ${c.date.slice(0, 4)}` });
+    } else if (!seen.has(c.issuer)) {
+      seen.add(c.issuer);
+      const same = list.filter((x) => x.issuer === c.issuer);
+      const years = same.map((x) => x.date.slice(0, 4)).sort();
+      lines.push({
+        title: `${c.issuer}: ${same.map((x) => t(x.short ?? x.name, lang)).join(', ')}`,
+        meta: years[0] === years.at(-1) ? years[0] : `${years[0]}–${years.at(-1)}`,
+      });
+    }
+  }
+  return lines;
+};
+---
+<Base title={`${profile.name} | ${r.title}`} bare>
+  <div class="no-print mx-auto flex max-w-[210mm] flex-wrap items-center justify-between gap-3 px-4 py-6 font-mono text-sm">
+    <a class="link text-muted" href={path(lang, '/')}>← {r.back}</a>
+    <div class="flex gap-2">
+      <button id="print" type="button" class="cursor-pointer rounded border border-line px-3 py-1.5 text-fg hover:border-pass/60">{r.print}</button>
+      <a href={`/resume-${lang}.pdf`} download={`maira-torres-cv-${lang}.pdf`} class="rounded bg-pass px-3 py-1.5 font-semibold text-bg hover:opacity-90">↓ {r.download}</a>
+    </div>
+  </div>
+
+  <main id="main" class="paper mx-auto mb-12 max-w-[210mm] bg-white px-[16mm] py-[14mm] text-[10.5pt] leading-snug text-[#1c2128] shadow-2xl print:m-0 print:max-w-none print:p-0 print:shadow-none">
+    <header class="flex flex-wrap items-end justify-between gap-4 border-b-2 border-[#1a7f37] pb-4">
+      <div>
+        <h1 class="font-mono text-[24pt] font-bold leading-none tracking-tight">{profile.name}<span class="text-[#1a7f37]">.</span></h1>
+        <p class="mt-2 font-mono text-[11pt] text-[#5b636d]">{title(t(profile.role, lang))}</p>
+      </div>
+      <ul class="text-right font-mono text-[8.5pt] leading-relaxed text-[#5b636d]">
+        <li>{host(profile.socials.linkedin)}</li>
+        <li>{host(profile.socials.github)}</li>
+      </ul>
+    </header>
+
+    <div class="mt-4 grid grid-cols-[52mm_1fr] gap-x-7">
+      {/* ---------- sidebar ---------- */}
+      <aside class="space-y-3 text-[8.5pt] leading-snug">
+        <section>
+          <h2 class="rh">{sentence(r.skills)}</h2>
+          <dl class="space-y-1.5">
+            {Object.entries(profile.skills).map(([g, { core, also = [] }]) => (
+              <div><dt class="font-mono text-[7.5pt] text-[#5b636d]">{sentence(g)}</dt><dd>{[...core, ...also].join(', ')}</dd></div>
+            ))}
+          </dl>
+        </section>
+        <section>
+          <h2 class="rh">{sentence(r.education)}</h2>
+          <ul class="space-y-1.5">
+            {profile.education.map((e) => <li><p class="font-semibold">{sentence(t(e.degree, lang))}</p><p class="text-[#5b636d]">{t(e.school, lang)}</p></li>)}
+          </ul>
+        </section>
+        <section>
+          <h2 class="rh">{sentence(r.spoken)}</h2>
+          <ul class="space-y-0.5">
+            {profile.spoken.map((l) => <li>{sentence(t(l.lang, lang))}: <span class="text-[#5b636d]">{terms(t(l.level, lang))}</span></li>)}
+          </ul>
+        </section>
+        <section>
+          <h2 class="rh">{sentence(r.training)}</h2>
+          <div class="space-y-1 text-[8pt] leading-tight">
+            {(Object.keys(certGroups) as CertGroup[]).filter((g) => byGroup(g).length).map((g) => (
+              <div>
+                <p class="font-mono text-[7.5pt] text-[#5b636d]">{sentence(t(certGroups[g], lang))}</p>
+                <ul>{certLines(g).map((l) => <li>{l.title} <span class="text-[#5b636d]">({l.meta})</span></li>)}</ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      </aside>
+
+      {/* ---------- main column ---------- */}
+      <div class="space-y-4">
+        <section>
+          <h2 class="rh">{sentence(r.summary)}</h2>
+          <p>{sentence(t(profile.resume.summary, lang))}</p>
+        </section>
+
+        <section>
+          <h2 class="rh">{sentence(r.certifications)}</h2>
+          <ul class="space-y-0.5 text-[9pt] leading-tight">
+            {certs.map((c) => <li>✓ {t(c.short ?? c.name, lang)} <span class="font-mono text-[7.5pt] text-[#5b636d]">· {c.issuer.replace('ISTQB · ', '')}, {c.date.slice(0, 4)}</span></li>)}
+          </ul>
+        </section>
+
+        <section>
+          <h2 class="rh">{sentence(r.experience)}</h2>
+          <ol class="space-y-2.5">
+            {experience.map((job) => (
+              <li class="break-inside-avoid">
+                <div class="flex justify-between gap-2">
+                  <h3 class="font-semibold">{title(t(job.role, lang))} · {job.company}</h3>
+                  <span class="shrink-0 font-mono text-[8pt] text-[#5b636d]">{t(job.period, lang).replace(' → ', '–')}</span>
+                </div>
+                {job.client && <p class="font-mono text-[8pt] text-[#5b636d]">{sentence(ui.client)}: {terms(t(job.client, lang))}</p>}
+                <ul class="mt-0.5 list-disc space-y-0 pl-4 text-[9pt] leading-snug">
+                  {/* the one-page pdf shows the first 3 points of each job; the website shows them all */}
+                  {t(job.bullets, lang).slice(0, 3).map((b) => <li>{sentence(b)}</li>)}
+                </ul>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section>
+          <h2 class="rh">{sentence(projects.length === 1 ? r.project : r.projects)}</h2>
+          <ul class="space-y-2">
+            {projects.slice(0, 2).map((p) => (
+              <li class="break-inside-avoid text-[9.5pt]">
+                <h3 class="font-semibold">{sentence(t(p.title, lang))} <span class="font-mono text-[8pt] font-normal text-[#5b636d]">· {p.year}</span></h3>
+                <p class="text-[9pt]">{sentence(t(p.description, lang))}</p>
+                {p.repo && <p class="font-mono text-[8pt] text-[#5b636d]">{host(p.repo)}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+      </div>
+    </div>
+  </main>
+</Base>
+<script>
+  document.getElementById('print')?.addEventListener('click', () => window.print());
+</script>
+<style>
+  .rh { margin-bottom: .4rem; font-family: var(--font-mono); font-size: 9.5pt; font-weight: 700; color: #1a7f37; }
+  @page { size: A4; margin: 11mm 14mm; }
+</style>

@@ -1,0 +1,21 @@
+---
+import Logo from './Logo.astro';
+import HiddenBug from './HiddenBug.astro';
+import { profile } from '../data/profile';
+import { getLang, useUI } from '../i18n';
+const lang = getLang(Astro.currentLocale);
+const ui = useUI(lang);
+const year = new Date().getFullYear();
+---
+<footer class="relative border-t border-dashed border-line">
+  <div class="relative mx-auto flex max-w-4xl flex-col gap-4 px-4 sm:px-6 py-10 font-mono text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+    <HiddenBug id="footer" class="right-4 sm:right-6 top-2" />
+    <span class="text-fg"><Logo /></span>
+    <nav class="flex gap-4" aria-label="footer">
+      <a class="link" href={profile.socials.github} target="_blank" rel="noopener noreferrer">github</a>
+      <a class="link" href={profile.socials.linkedin} target="_blank" rel="noopener noreferrer">linkedin</a>
+      <a class="link" href={`/resume-${lang}.pdf`}>cv</a>
+    </nav>
+    <span>© {year} {profile.name} · <span data-known-bugs>{ui.knownBugs(0)}</span></span>
+  </div>
+</footer>

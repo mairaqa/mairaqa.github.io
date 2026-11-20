@@ -1,0 +1,18 @@
+---
+interface Props { id: string; label: string; n: string; meta?: string }
+const { id, label, n, meta } = Astro.props;
+// Code-style titles with a green cursor, like the mt_qa logo: lowercase snake_case
+// ("projects_", "get_in_touch_"). The aria-label keeps the readable label for screen readers.
+const parts = label.trim().split(/\s+/).map((w) => (w === '&' ? 'and' : w.toLowerCase()));
+---
+<header class="mb-10">
+  <div class="flex items-end justify-between gap-4">
+    <h2 id={`${id}-title`} class="font-mono text-2xl sm:text-3xl font-bold tracking-tight text-fg" aria-label={label}>
+      <span class="mr-2 text-base font-normal text-pass" aria-hidden="true">{n}.</span><span aria-hidden="true">{parts.map((w, i) => (
+        <>{w}{i < parts.length - 1 && <>_<wbr /></>}</>
+      ))}<span class="text-pass">_</span></span>
+    </h2>
+    {meta && <span class="hidden sm:block pb-1 font-mono text-xs text-muted">{meta}</span>}
+  </div>
+  <div class="mt-3 border-t border-dashed border-line" aria-hidden="true"></div>
+</header>

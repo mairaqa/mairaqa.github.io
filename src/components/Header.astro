@@ -1,0 +1,46 @@
+---
+import Logo from './Logo.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import BugHunt from './BugHunt.astro';
+import { getLang, useUI, path } from '../i18n';
+const lang = getLang(Astro.currentLocale);
+const ui = useUI(lang);
+const other = lang === 'en' ? 'es' : 'en';
+const base = Astro.url.pathname.replace(/^\/es(\/|$)/, '/');
+const home = path(lang, '/');
+const links = (['about', 'projects', 'experience', 'certifications', 'contact'] as const)
+  .map((k) => [ui.nav[k], `${home}#${k}`]);
+---
+<header class="sticky top-0 z-40 border-b border-line/60 bg-bg/80 backdrop-blur">
+  <nav class="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 sm:px-6 h-14 font-mono text-sm" aria-label="primary">
+    <a href={`${home}#top`} class="text-fg hover:text-pass transition-colors"><Logo /></a>
+    <ul class="hidden lg:flex items-center gap-5 text-muted">
+      {links.map(([label, href]) => <li><a href={href} class="hover:text-fg transition-colors">{label}</a></li>)}
+    </ul>
+    <div class="flex items-center gap-2">
+      <BugHunt />
+      <a href={path(other, base)} hreflang={other} lang={other} title={ui.langLabel}
+        class="rounded border border-line px-2 py-1 text-xs text-muted hover:text-fg transition-colors">
+        <span class={lang === 'en' ? 'text-fg' : ''}>en</span><span class="text-line">/</span><span class={lang === 'es' ? 'text-fg' : ''}>es</span><span class="sr-only"> · {ui.langLabel}</span>
+      </a>
+      <ThemeToggle />
+      <details class="lg:hidden relative">
+        <summary class="list-none cursor-pointer border border-line rounded px-2 py-1 text-xs text-muted hover:text-fg">{ui.menu}</summary>
+        <ul class="absolute right-0 mt-2 w-48 rounded border border-line bg-surface p-2 shadow-lg">
+          {links.map(([label, href]) => <li><a href={href} class="block rounded px-2 py-1.5 text-muted hover:text-fg hover:bg-bg">{label}</a></li>)}
+        </ul>
+      </details>
+    </div>
+  </nav>
+</header>
+<script>
+  // mobile menu: close after choosing a link, with Escape (focus back on the button) or by clicking outside
+  const menu = document.querySelector<HTMLDetailsElement>('header details');
+  if (menu) {
+    menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => { menu.open = false; }));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menu.open) { menu.open = false; menu.querySelector('summary')?.focus(); }
+    });
+    document.addEventListener('click', (e) => { if (menu.open && !menu.contains(e.target as Node)) menu.open = false; });
+  }
+</script>

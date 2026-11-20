@@ -1,0 +1,112 @@
+---
+import { profile } from '../data/profile';
+import Bug from './Bug.astro';
+import { getLang, useUI, t, path } from '../i18n';
+import { sentence, title, terms } from '../i18n/case';
+const lang = getLang(Astro.currentLocale);
+const ui = useUI(lang);
+const [first, ...rest] = profile.name.split(' ');
+const lines = [
+  { text: '$ npx playwright test portfolio.spec.ts', cls: 'text-fg' },
+  { text: '', cls: '' },
+  { text: 'running 4 tests using 4 workers', cls: 'text-muted' },
+  { text: '  ✓ hires_a_detail_oriented_qa', cls: 'text-pass' },
+  { text: '  ✓ finds_bugs_before_users_do', cls: 'text-pass' },
+  { text: '  ✓ automates_the_boring_stuff', cls: 'text-pass' },
+  { text: '  ✓ ships_with_confidence', cls: 'text-pass' },
+  { text: '', cls: '' },
+  { text: '4 passed · 0 failed · 0 flaky', cls: 'text-fg font-semibold' },
+];
+---
+<section id="top" class="mx-auto max-w-4xl px-4 sm:px-6 pt-16 pb-12 sm:pt-24 sm:pb-16">
+  <p class="font-mono text-sm text-muted mb-4">{ui.hi}</p>
+  <h1 class="font-mono text-5xl sm:text-7xl font-bold tracking-tight leading-[1.05]">
+    {first}{rest.length > 0 && <span class="text-muted">{' ' + rest.join(' ')}</span>}<span class="text-pass">.</span>
+  </h1>
+  <div class="mt-6 grid gap-12 lg:mt-10 lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-10">
+    <div>
+      <p class="max-w-xl text-lg text-fg/90">{title(t(profile.role, lang))} {terms(t(profile.tagline, lang))}</p>
+      <p class="mt-4 max-w-xl text-muted leading-relaxed">{sentence(t(profile.intro, lang))}</p>
+      <h2 class="mt-6 font-mono text-xs uppercase tracking-wider text-muted">{ui.coreExpertise}</h2>
+      <ul class="mt-3 grid gap-1.5 font-mono text-sm text-muted sm:grid-cols-2 lg:grid-cols-1">
+        {t(profile.focus, lang).map((f) => <li><span class="text-pass" aria-hidden="true">▸</span> {sentence(f)}</li>)}
+      </ul>
+      <div class="mt-8 flex flex-wrap items-center gap-3 font-mono text-sm">
+        <a href={`${path(lang, '/')}#projects`} class="rounded bg-pass px-4 py-2 font-semibold text-bg hover:opacity-90 transition-opacity">{ui.viewProjects}</a>
+        <a href={`/resume-${lang}.pdf`} download={`maira-torres-cv-${lang}.pdf`} class="rounded border border-line px-4 py-2 text-fg hover:border-pass/60 transition-colors">↓ {ui.downloadCv}</a>
+        <span class="ml-1 inline-flex items-center gap-2 text-xs text-muted">
+          <span class="relative flex size-2" aria-hidden="true">
+            <span class="ping-few absolute inline-flex size-full rounded-full bg-pass opacity-60"></span>
+            <span class="relative inline-flex size-2 rounded-full bg-pass"></span>
+          </span>
+          {ui.available}
+        </span>
+      </div>
+    </div>
+
+    <div class="relative lg:mt-1">
+      <div class="bug-track">
+        <button id="hero-bug" type="button" data-bug-id="hero" class="hero-bug text-fail cursor-pointer" aria-label={ui.bugEscaped} title={ui.bugEscaped}>
+          <Bug class="size-6 bug-icon" />
+          <span class="bug-check text-lg" aria-hidden="true">✓</span>
+        </button>
+      </div>
+      <div class="rounded-lg border border-line bg-surface overflow-hidden shadow-xl">
+        <div class="flex items-center gap-1.5 border-b border-line px-4 py-2.5">
+          <span class="size-2.5 rounded-full bg-fail/80" aria-hidden="true"></span>
+          <span class="size-2.5 rounded-full bg-flaky/80" aria-hidden="true"></span>
+          <span class="size-2.5 rounded-full bg-pass/80" aria-hidden="true"></span>
+          <span class="ml-3 font-mono text-xs text-muted" aria-hidden="true">~/portfolio · zsh</span>
+        </div>
+        <pre id="terminal" class="p-4 sm:p-5 font-mono text-[13px] sm:text-sm leading-relaxed whitespace-pre-wrap break-words min-h-[16rem]" aria-label="test run output">{lines.map((l) => <span class={`term-line block ${l.cls}`}>{l.text || ' '}</span>)}<span id="bug-log" class="hidden"><span class="block"> </span><span class="block text-fail">{ui.bugLog1}</span><span class="block text-pass">{ui.bugLog2}</span></span><span class="cursor text-muted"></span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const lines = Array.from(document.querySelectorAll<HTMLElement>('#terminal .term-line'));
+  if (!reduce && lines.length) {
+    const cmd = lines[0];
+    const full = cmd.textContent ?? '';
+    lines.forEach((l) => l.classList.add('invisible'));
+    cmd.classList.remove('invisible');
+    cmd.textContent = '';
+    let i = 0;
+    const type = () => {
+      if (i <= full.length) { cmd.textContent = full.slice(0, i++); setTimeout(type, 35); }
+      else lines.slice(1).forEach((l, n) => setTimeout(() => l.classList.remove('invisible'), 300 + n * 220));
+    };
+    setTimeout(type, 400);
+  }
+  document.getElementById('hero-bug')?.addEventListener('bug:caught', () =>
+    document.getElementById('bug-log')?.classList.remove('hidden'));
+</script>
+
+<style>
+  .bug-track { position: absolute; inset: -14px 0 auto 0; height: 28px; z-index: 10; pointer-events: none; }
+  .hero-bug {
+    position: absolute; top: 0; left: 4%; pointer-events: auto;
+    width: 28px; height: 28px;
+    animation: crawl 22s linear infinite;
+  }
+  .hero-bug :global(.bug-icon) { animation: wiggle .25s ease-in-out infinite alternate; }
+  .hero-bug:hover, .hero-bug:hover :global(.bug-icon) { animation-play-state: paused; }
+  .hero-bug:hover { color: var(--flaky); }
+  .hero-bug:global(.caught) { animation-play-state: paused; }
+  @keyframes crawl {
+    0%   { left: 4%;  transform: rotate(90deg); }
+    46%  { left: calc(96% - 28px); transform: rotate(90deg); }
+    50%  { left: calc(96% - 28px); transform: rotate(-90deg); }
+    96%  { left: 4%;  transform: rotate(-90deg); }
+    100% { left: 4%;  transform: rotate(90deg); }
+  }
+  @keyframes wiggle { from { rotate: -6deg; } to { rotate: 6deg; } }
+  /* "available" dot: pings a few times, then rests */
+  .ping-few { animation: ping 1s cubic-bezier(0, 0, .2, 1) 4; }
+  @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-bug, .hero-bug :global(.bug-icon), .ping-few { animation: none; }
+    .hero-bug { left: auto; right: 6%; transform: rotate(20deg); }
+  }
+</style>

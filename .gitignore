@@ -1,0 +1,43 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+.vscode/
+
+# personal files, never publish
+private/
+
+# local editor / assistant settings
+.vscode/
+.claude/
+*.local.json
+
+# secrets and keys, never commit
+.env*
+*.pem
+*.key
+*.p12
+
+# originals of personal documents (CVs, certificates, ids): keep them out of the repo
+*.docx
+/*.pdf

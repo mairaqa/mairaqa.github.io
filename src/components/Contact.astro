@@ -1,0 +1,21 @@
+---
+import SectionTitle from './SectionTitle.astro';
+import { profile } from '../data/profile';
+import { getLang, useUI } from '../i18n';
+const lang = getLang(Astro.currentLocale);
+const ui = useUI(lang);
+// Privacy: no email or phone here. LinkedIn handles first contact; share the email privately when needed.
+---
+<section id="contact" aria-labelledby="contact-title" class="reveal mx-auto max-w-4xl px-4 sm:px-6 py-14 sm:py-16">
+  <SectionTitle n="05" id="contact" label={ui.contact} meta="expect(response).toBeFast()" />
+  <p class="font-mono text-4xl sm:text-5xl font-bold">{ui.openToWork}<span class="text-pass">.</span></p>
+  <p class="mt-4 max-w-xl text-muted">{ui.contactText}</p>
+  <div class="mt-8 flex flex-wrap items-center gap-3 font-mono text-sm">
+    <a href={profile.socials.linkedin} target="_blank" rel="noopener noreferrer"
+      class="rounded bg-pass px-4 py-2 font-semibold text-bg hover:opacity-90 transition-opacity">{ui.contactCta} ↗</a>
+    <a href={`/resume-${lang}.pdf`} download={`maira-torres-cv-${lang}.pdf`}
+      class="rounded border border-line px-4 py-2 text-fg hover:border-pass/60 transition-colors">↓ {ui.downloadCv}</a>
+    <a href={profile.socials.github} target="_blank" rel="noopener noreferrer"
+      class="rounded border border-line px-4 py-2 text-fg hover:border-pass/60 transition-colors">GitHub ↗</a>
+  </div>
+</section>

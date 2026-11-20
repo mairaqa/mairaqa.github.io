@@ -1,0 +1,71 @@
+---
+import '../styles/global.css';
+import { profile } from '../data/profile';
+import { getLang, t, path, useUI } from '../i18n';
+import { title as titleCase, terms } from '../i18n/case';
+
+interface Props { title?: string; description?: string; bare?: boolean }
+const lang = getLang(Astro.currentLocale);
+const ui = useUI(lang);
+const {
+  title = `${profile.name} | ${titleCase(t(profile.role, lang))}`,
+  description = `${titleCase(t(profile.role, lang))} ${terms(t(profile.tagline, lang))}`,
+  bare = false,
+} = Astro.props;
+// path without the /es prefix, to build the alternate-language links
+const base = Astro.url.pathname.replace(/^\/es(\/|$)/, '/');
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const personLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  jobTitle: titleCase(t(profile.role, lang)),
+  url: new URL(path(lang, '/'), Astro.site).href,
+  sameAs: [profile.socials.github, profile.socials.linkedin],
+};
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en" href={new URL(path('en', base), Astro.site)} />
+    <link rel="alternate" hreflang="es" href={new URL(path('es', base), Astro.site)} />
+    <link rel="alternate" hreflang="x-default" href={new URL(path('en', base), Astro.site)} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={lang === 'es' ? 'es_ES' : 'en_US'} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#0d1117" />
+    {/* structured data for search engines. Privacy: public profile links only, no email or location */}
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(personLd)} />
+    <script is:inline>
+      // "js" lets CSS hide content for the reveal animation only when JS can show it again
+      document.documentElement.classList.add('js');
+      try { if (localStorage.getItem('theme') === 'light') document.documentElement.classList.add('light'); } catch {}
+    </script>
+  </head>
+  <body class="font-sans antialiased min-h-screen">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 bg-surface px-3 py-2 font-mono text-sm">{ui.skip}</a>
+    <slot />
+    {!bare && (
+      <div id="toast" role="status" aria-live="polite"
+        class="toast fixed bottom-4 right-4 left-4 sm:left-auto z-50 max-w-sm rounded-lg border border-line bg-surface p-4 font-mono text-sm shadow-xl"
+        data-counter={ui.hunt.counter(9991, 9992)} data-intro={ui.hunt.intro(9992)} data-caught={ui.hunt.caught(9991, 9992)}
+        data-done={ui.hunt.done} data-reset={ui.hunt.reset} data-known={ui.knownBugs(9991)} data-known-one={ui.knownBugs(1)}
+        data-contact={path(lang, '/#contact')} data-contact-label={ui.nav.contact}>
+      </div>
+    )}
+    <script>
+      import '../scripts/reveal';
+      import '../scripts/bug-hunt';
+    </script>
+  </body>
+</html>
